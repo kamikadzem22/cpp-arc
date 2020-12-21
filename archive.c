@@ -129,7 +129,7 @@ void fprint_files(FILE *stream, FILE *archive) {
         union AR4_file_frame_header_raw* header = get_AR4_file_frame_header_raw_from_bytes(header_bytes);
         char* filename = get_frame_data(frame_bytes, &filesize);
         pos += frame_size;
-        fprintf(stream, "%s %d bytes | namesize: %d\n", filename, filesize, header->filename_length);
+        fprintf(stream, "%s %d bytes\n", filename, filesize);
         free(frame_bytes);
         free(header_bytes);
         free(header);

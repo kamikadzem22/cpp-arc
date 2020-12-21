@@ -88,7 +88,7 @@ void fprint_files(FILE* stream, FILE* archive);
 void extract_files(FILE *stream, FILE *archive, int verbose_flag);
 
 //TODO:
-void extract_files(FILE* archive);
+void extract_files(FILE *stream, FILE *archive, int verbose_flag);
 
 //TODO: check if ar4 file
 int is_ar4_arc(FILE* fp);
