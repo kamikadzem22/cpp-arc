@@ -45,60 +45,8 @@ void usage(FILE *fp, const char *path) {
 
 }
 
-void test(){
-
-//    printf("%d", frame_data[0]);
-//    for (int i = 0; i < data_length; ++i) {
-//        printf("%c", frame_data[i]);
-//    }
-//    AR4_file_frame_header_raw*  frame_header = get_AR4_file_frame_header_raw_from_bytes(frame_data);
-//    printf("Frame length: %d\nName length: %ud", frame_header->length, frame_header->filename_length);
-//    free(frame_header);
-    FILE* kek;
-    kek = fopen("text.arc", "rb");
-    char* frame_data;
-    int data_length;
-
-    generate_file_frame_from_file(kek, "text.arc", get_filesize("text.arc"), &frame_data, &data_length);
-    test_print_frame_data(frame_data, data_length);
-    char* filename_parsed = get_frame_data(frame_data, NULL);
-    printf("parsed str %s, size: %zu\n", filename_parsed, 0);
-
-    FILE* archive;
-    delete_file("new.arc");
-    archive = fopen("new.arc", "wb+");
-
-    create_archive(archive);
-
-    FILE* kek1;
-    kek1 = fopen("test.arc", "rb");
-    char* newframe = read_file_to_bytes(kek1, get_filesize("cpp_arc"));
-    int new_size;
-    generate_file_frame_from_bytes(newframe, get_filesize("cpp_arc"), "cpp_arc", &newframe, &new_size);
-
-    add_file_frame_to_archive(archive, frame_data, data_length);
-    add_file_frame_to_archive(archive, frame_data, data_length);
-    add_file_frame_to_archive(archive, newframe, new_size);
-    add_file_frame_to_archive(archive, frame_data, data_length);
-    add_file_frame_to_archive(archive, newframe, new_size);
-
-
-    printf("\n");
-    fprint_files(stdout, archive);
-    fclose(archive);
-
-
-//
-//    FILE* test;
-//    test = fopen("a.arc", "w");
-//    write_frame_to_file(test, frame_data);
-//
-//    free(frame_data);
-//    free(filename_parsed);
-}
 
 int main(int argc, char *argv[]) {
-//    test();
     char filename[256] = {0};
     FILE *fp = NULL;
 
@@ -156,25 +104,28 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    if (filename[0] && create_flag && is_writeable(filename)) {
+    if (filename[0] && create_flag) {
         delete_file(filename);
-        fp = fopen(filename, "w+");
-        create_archive(fp);
+        if (is_writeable(filename))
+        {
+            fp = fopen(filename, "w+");
+            create_archive(fp);
+        }
+
         for (int i = optind; i < argc; ++i) {
-            if (strcmp(filename, argv[i]) == 0){
+            if (strcmp(filename, argv[i]) == 0) {
                 fprintf(stderr, "Omitting archive itself: %s\n", filename);
             }
-            if (is_readable(argv[i]))
-            {
-                if (verbose_flag){
+            if (is_readable(argv[i])) {
+                if (verbose_flag) {
                     printf("Adding file: %s\n", argv[i]);
                 }
 
-                FILE* file;
+                FILE *file;
                 file = fopen(argv[i], "r");
                 size_t filesize = get_filesize(argv[i]);
-                char* file_bytes;
-                char* frameData = read_file_to_bytes(file, filesize);
+                char *file_bytes;
+                char *frameData = read_file_to_bytes(file, filesize);
                 int newFileSize;
                 generate_file_frame_from_bytes(frameData, filesize, argv[i], &frameData, &newFileSize);
                 add_file_frame_to_archive(fp, frameData, newFileSize);
@@ -201,7 +152,7 @@ int main(int argc, char *argv[]) {
         fprint_files(stdout, fp);
     }
 
-    if (!fp){
+    if (!fp) {
         fprintf(stderr, "Could not access file: %s\n", filename);
         return -1;
     }
