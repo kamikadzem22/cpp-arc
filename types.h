@@ -9,7 +9,7 @@
 typedef union AR4_header {
     struct  {
         char magic[MAGIC_SIZE];
-        u_int64_t length;
+        u_int32_t length;
     };
     char raw[AR4_HEADER_RAW_SIZE];
 } AR4_header;
@@ -36,8 +36,9 @@ typedef struct AR4_file_frame_header_data {
 
 
 
-union AR4_header* get_AR4_header();
-
+union AR4_header* get_AR4_header_raw_from_bytes(char* data);
+union AR4_header *get_AR4_header_raw(size_t length);
+union AR4_header *get_AR4_header_raw_new(size_t length);
 union AR4_file_frame_header_raw* get_AR4_file_frame_header_raw(unsigned int length, char filename_size);
 union AR4_file_frame_header_raw* get_AR4_file_frame_header_raw_from_bytes(char* data);
 #endif //CPP_ARC_TYPES_H

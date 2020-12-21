@@ -32,8 +32,7 @@ void add_file_to_archive(FILE* archive, FILE* file, char* filename);
  * |  Frame size | Filename size |     Filename      |        Data        |
  * |  (4 bytes)  |   (1 byte)    | (up to 255 bytes) | (up to 2^32 bytes) |
  * +-------------+---------------+-------------------+--------------------+
- *
- * Frame structure
+ *                        Frame structure
  * */
 void generate_file_frame_from_bytes(char *data, size_t data_length, char *filename, char **frame_dst, int *frame_length);
 
@@ -63,6 +62,7 @@ void write_frame_to_file(FILE *file, char *frame);
 char* get_frame_data(char *frame, size_t *size);
 
 size_t get_file_in_frame_size(char* frame);
+size_t get_raw_frame_size(char* frame);
 
 void test_print_frame_data(char* frame, size_t frame_length);
 
@@ -72,11 +72,23 @@ void decode_file_frame_from_bytes(char* frame, size_t frame_length);
 //TODO: write given frame to file
 void add_file_frame_to_archive(FILE* archive, char* frame_data, int frame_length);
 
-//TODO: update archive size after file write
-void update_archive_size(FILE* archive, int new_size, int size_position);
+/**
+ * @brief updates length in archive, w+ mode!
+ * */
+void update_archive_size(FILE *archive, int new_size);
+
+u_int32_t get_archive_size(FILE* archive);
+
+
+void create_archive(FILE* archive);
 
 //TODO:
-void create_archive(FILE* archive);
+void fprint_files(FILE* stream, FILE* archive);
+
+void extract_files(FILE *stream, FILE *archive, int verbose_flag);
+
+//TODO:
+void extract_files(FILE* archive);
 
 //TODO: check if ar4 file
 int is_ar4_arc(FILE* fp);

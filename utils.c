@@ -34,11 +34,13 @@ size_t get_file_blocks_count(FILE *fp) {
 }
 
 char * read_file_to_bytes(FILE *fp, size_t file_length) {
+    unsigned int file_pos = ftell(fp);
     if (fp == NULL){
         return NULL;
     }
     char* data = (char*)malloc(file_length);
     fread(data, file_length, 1, fp);
+    fseek(fp, file_pos, SEEK_SET);
     return data;
 }
 
@@ -54,4 +56,10 @@ size_t get_filesize(char *filename) {
 
 void write_bytes_to_file(FILE *fp, char *data, size_t data_length) {
     fwrite(data, data_length, 1, fp);
+}
+
+void delete_file(char *filename) {
+    FILE* fp;
+    fp = fopen(filename, "w");
+    fclose(fp);
 }

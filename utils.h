@@ -23,6 +23,7 @@ size_t get_file_blocks_count(FILE* fp);
 
 char * read_file_to_bytes(FILE *fp, size_t file_length);
 
+void delete_file(char *filename);
 
 void write_bytes_to_file(FILE *fp, char* data, size_t data_length);
 

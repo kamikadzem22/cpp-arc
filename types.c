@@ -11,12 +11,24 @@
 
 
 
-union AR4_header *get_AR4_header(size_t length) {
+union AR4_header *get_AR4_header_raw_from_bytes(char *data) {
+    AR4_header* header = (AR4_header*)malloc(sizeof(AR4_header));
+    memcpy(header->raw, data, AR4_HEADER_RAW_SIZE);
+    return header;
+}
+
+
+union AR4_header *get_AR4_header_raw(size_t length) {
     AR4_header* header = (AR4_header*)malloc(sizeof(AR4_header));
     strncpy(header->magic, MAGIC, MAGIC_SIZE);
     header->length = length;
     return header;
 }
+
+union AR4_header *get_AR4_header_raw_new(size_t length) {
+    return get_AR4_header_raw(AR4_HEADER_RAW_SIZE + length);
+}
+
 
 union AR4_file_frame_header_raw *get_AR4_file_frame_header_raw(unsigned int length, char filename_size) {
     AR4_file_frame_header_raw* header = (AR4_file_frame_header_raw*)malloc(sizeof(AR4_file_frame_header_raw));

@@ -73,9 +73,103 @@ char *get_frame_data(char *frame, size_t *size) {
     return filename;
 }
 
+
+
 size_t get_file_in_frame_size(char *frame) {
     union AR4_file_frame_header_raw* header = get_AR4_file_frame_header_raw_from_bytes(frame);
     size_t out = header->length - FRAME_HEADER_RAW_SIZE - header->filename_length;
     free(header);
     return out;
 }
+
+size_t get_raw_frame_size(char *frame) {
+    union AR4_file_frame_header_raw* header = get_AR4_file_frame_header_raw_from_bytes(frame);
+    size_t out = header->length;
+    free(header);
+    return out;
+}
+
+
+void update_archive_size(FILE *archive, int new_size) {
+    fseek(archive, 0, SEEK_SET);
+    AR4_header* header = get_AR4_header_raw(new_size);
+    write_bytes_to_file(archive, header->raw, AR4_HEADER_RAW_SIZE);
+
+
+}
+//TODO: int64
+u_int32_t get_archive_size(FILE *archive) {
+    fseek(archive, 0, SEEK_SET);
+    char* header_bytes = read_file_to_bytes(archive, AR4_HEADER_RAW_SIZE);
+    union AR4_header* header =get_AR4_header_raw_from_bytes(header_bytes);
+    u_int32_t out = header->length;
+    free(header);
+    return out;
+}
+
+void add_file_frame_to_archive(FILE *archive, char *frame_data, int frame_length) {
+    fseek(archive, 0, SEEK_SET);
+    u_int32_t size = get_archive_size(archive);
+    fseek(archive, size, SEEK_SET);
+    write_bytes_to_file(archive, frame_data, frame_length);
+    size+=frame_length;
+    update_archive_size(archive, size);
+}
+
+void fprint_files(FILE *stream, FILE *archive) {
+    size_t pos = 0;
+    size_t size = get_archive_size(archive);
+    pos = AR4_HEADER_RAW_SIZE;
+    while (pos < size){
+        fseek(archive, pos, SEEK_SET);
+        char* header_bytes = read_file_to_bytes(archive, FRAME_HEADER_RAW_SIZE);
+        size_t frame_size = get_raw_frame_size(header_bytes);
+        char* frame_bytes = read_file_to_bytes(archive, frame_size);
+        size_t filesize;
+        union AR4_file_frame_header_raw* header = get_AR4_file_frame_header_raw_from_bytes(header_bytes);
+        char* filename = get_frame_data(frame_bytes, &filesize);
+        pos += frame_size;
+        fprintf(stream, "%s %d bytes | namesize: %d\n", filename, filesize, header->filename_length);
+        free(frame_bytes);
+        free(header_bytes);
+        free(header);
+    }
+
+}
+
+void create_archive(FILE *archive) {
+    AR4_header* header = get_AR4_header_raw(AR4_HEADER_RAW_SIZE);
+    write_bytes_to_file(archive, header->raw, AR4_HEADER_RAW_SIZE);
+    free(header);
+}
+
+void extract_files(FILE *stream, FILE *archive, int verbose_flag) {
+    size_t pos = 0;
+    size_t size = get_archive_size(archive);
+    pos = AR4_HEADER_RAW_SIZE;
+    while (pos < size){
+        fseek(archive, pos, SEEK_SET);
+        char* header_bytes = read_file_to_bytes(archive, FRAME_HEADER_RAW_SIZE);
+        size_t frame_size = get_raw_frame_size(header_bytes);
+        char* frame_bytes = read_file_to_bytes(archive, frame_size);
+        size_t filesize;
+        union AR4_file_frame_header_raw* header = get_AR4_file_frame_header_raw_from_bytes(header_bytes);
+        char* filename = get_frame_data(frame_bytes, &filesize);
+        pos += frame_size;
+        if (verbose_flag)
+            fprintf(stream, "Extracting file: %s\n", filename);
+        FILE* file;
+        if (is_file(filename)){
+            fprintf(stream, "File exists: %s\n", filename);
+            continue;
+        }
+        file = fopen(filename, "w");
+        write_frame_to_file(file, frame_bytes);
+        fclose(file);
+        free(frame_bytes);
+        free(header_bytes);
+        free(header);
+    }
+}
+
+
